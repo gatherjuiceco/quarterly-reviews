@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Q1 2026 Quarterly Review</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0d0d0f; color: #e8e8e8; font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+:root {
+  --green: #4ecca3;
+  --gold: #e2b714;
+  --coral: #e07c54;
+  --dim: #6b6b7b;
+  --card-bg: #18181c;
+  --border: #2a2a32;
+}
+
+/* CARD CAROUSEL */
+.carousel-container { width: 100%; max-width: 700px; margin: 0 auto; padding: 40px 20px 20px; position: relative; overflow: hidden; }
+.carousel-viewport { position: relative; height: 480px; }
+.card {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px;
+  padding: 40px 36px; display: flex; flex-direction: column; justify-content: center;
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.45s ease;
+  opacity: 0; transform: translateX(100%); pointer-events: none;
+}
+.card.active { opacity: 1; transform: translateX(0); pointer-events: auto; }
+.card.exit-left { opacity: 0; transform: translateX(-100%); }
+.card.enter-left { transform: translateX(-100%); opacity: 0; }
+.card h1 { font-family: 'Instrument Serif', serif; font-size: 2.4em; font-weight: 400; margin-bottom: 8px; line-height: 1.15; }
+.card h2 { font-family: 'DM Sans', sans-serif; font-size: 1.1em; font-weight: 500; color: var(--dim); margin-bottom: 20px; letter-spacing: 0.5px; text-transform: uppercase; }
+.card h3 { font-family: 'DM Mono', monospace; font-size: 0.85em; color: var(--dim); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.card p { font-size: 1.05em; line-height: 1.7; color: #c0c0cc; }
+.card .big-num { font-family: 'DM Mono', monospace; font-size: 3.2em; font-weight: 500; color: var(--green); }
+.card .sub-num { font-family: 'DM Mono', monospace; font-size: 1.4em; color: var(--dim); }
+
+/* Progress bars */
+.progress-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.progress-label { font-family: 'DM Mono', monospace; font-size: 0.8em; color: var(--dim); width: 80px; text-align: right; flex-shrink: 0; }
+.progress-track { flex: 1; height: 10px; background: #252530; border-radius: 5px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 5px; transition: width 0.6s ease; }
+.progress-val { font-family: 'DM Mono', monospace; font-size: 0.8em; color: #e8e8e8; width: 48px; flex-shrink: 0; }
+
+/* Category rows */
+.cat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 8px 12px; background: #1e1e24; border-radius: 8px; }
+.cat-icon { font-size: 1.2em; width: 28px; text-align: center; }
+.cat-name { flex: 1; font-size: 0.95em; }
+.cat-score { font-family: 'DM Mono', monospace; font-size: 0.9em; }
+
+/* Needle mover items */
+.nm-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 8px 12px; background: #1e1e24; border-radius: 8px; }
+.nm-status { font-size: 1.1em; width: 24px; text-align: center; }
+.nm-text { flex: 1; font-size: 0.88em; color: #c0c0cc; }
+.nm-date { font-family: 'DM Mono', monospace; font-size: 0.75em; color: var(--dim); }
+
+/* Patterns */
+.pattern-item { margin-bottom: 16px; padding: 12px 16px; background: #1e1e24; border-radius: 8px; border-left: 3px solid var(--green); }
+.pattern-item.caution { border-left-color: var(--gold); }
+.pattern-item.concern { border-left-color: var(--coral); }
+.pattern-item .pattern-title { font-weight: 500; font-size: 0.95em; margin-bottom: 4px; }
+.pattern-item .pattern-desc { font-size: 0.85em; color: #9090a0; }
+
+/* Timeline */
+.timeline-item { display: flex; gap: 12px; margin-bottom: 12px; }
+.timeline-month { font-family: 'DM Mono', monospace; font-size: 0.75em; color: var(--dim); width: 36px; flex-shrink: 0; text-align: right; padding-top: 2px; }
+.timeline-content { flex: 1; font-size: 0.88em; color: #c0c0cc; padding-left: 12px; border-left: 2px solid var(--border); }
+.timeline-content strong { color: #e8e8e8; }
+
+/* Nav dots */
+.nav-dots { display: flex; justify-content: center; gap: 8px; padding: 20px 0; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: all 0.3s; }
+.dot.active { background: var(--green); transform: scale(1.3); }
+
+/* Nav arrows */
+.nav-arrows { display: flex; justify-content: center; gap: 16px; margin-bottom: 24px; }
+.nav-arrows button { background: var(--card-bg); border: 1px solid var(--border); color: #e8e8e8; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2em; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.nav-arrows button:hover { border-color: var(--green); color: var(--green); }
+.nav-arrows button:disabled { opacity: 0.3; cursor: default; }
+
+/* DASHBOARD */
+.dashboard { max-width: 700px; margin: 0 auto; padding: 0 20px 60px; }
+.dash-title { font-family: 'Instrument Serif', serif; font-size: 1.8em; margin-bottom: 24px; text-align: center; }
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px; }
+.stat-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+.stat-box .stat-val { font-family: 'DM Mono', monospace; font-size: 1.6em; font-weight: 500; }
+.stat-box .stat-label { font-size: 0.75em; color: var(--dim); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.dash-section { margin-bottom: 28px; }
+.dash-section h3 { font-family: 'DM Mono', monospace; font-size: 0.8em; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+.habit-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #1e1e24; border-radius: 8px; margin-bottom: 6px; }
+.habit-name { font-size: 0.88em; }
+.habit-status { font-family: 'DM Mono', monospace; font-size: 0.8em; }
+.held { color: var(--green); }
+.wavered { color: var(--gold); }
+.broke { color: var(--coral); }
+
+.scroll-note { text-align: center; font-size: 0.8em; color: var(--dim); margin-top: 8px; }
+
+@media (max-width: 480px) {
+  .card { padding: 28px 24px; }
+  .card h1 { font-size: 1.8em; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .carousel-viewport { height: 520px; }
+}
+</style>
+</head>
+<body>
+
+<div class="carousel-container">
+  <div class="carousel-viewport" id="viewport">
+
+    <!-- CARD 0: Title -->
+    <div class="card active" data-idx="0">
+      <h2>Quarterly Review</h2>
+      <h1>Q1 2026</h1>
+      <p style="font-family:'DM Mono',monospace; font-size:0.9em; color:var(--dim); margin-top:12px;">January 1 — March 30, 2026</p>
+      <p style="margin-top:24px; font-size:0.95em;">90 days. From Life Ideals on a camping trip&hellip; to a juice bar about to open.</p>
+    </div>
+
+    <!-- CARD 1: Theme -->
+    <div class="card" data-idx="1">
+      <h3>The Story</h3>
+      <h1 style="font-size:1.8em; line-height:1.3;">The quarter that built the thing.</h1>
+      <p style="margin-top:16px;">January was spacious — camping, reflection, planning, Life Ideals work, meeting Norman. February was the grind: permits, plumbing plans, Clayton financial conversations, Gretchen's job search, buildout starting. March was pure execution: inspections, equipment moves, hiring, finish work — all converging on an April 6 open. The business consumed more and more of the calendar as the quarter progressed, which was expected but worth naming.</p>
+    </div>
+
+    <!-- CARD 2: Goals Overview -->
+    <div class="card" data-idx="2">
+      <h3>Goals Hit Rate</h3>
+      <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:24px;">
+        <span class="big-num">75%</span>
+        <span class="sub-num">40 of 53</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Jan</span>
+        <div class="progress-track"><div class="progress-fill" style="width:100%; background:var(--green);"></div></div>
+        <span class="progress-val" style="color:var(--green);">16/16</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Feb</span>
+        <div class="progress-track"><div class="progress-fill" style="width:78%; background:var(--gold);"></div></div>
+        <span class="progress-val" style="color:var(--gold);">15/22</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Mar</span>
+        <div class="progress-track"><div class="progress-fill" style="width:60%; background:var(--coral);"></div></div>
+        <span class="progress-val" style="color:var(--coral);">9/15</span>
+      </div>
+      <p style="font-size:0.85em; color:var(--dim); margin-top:16px;">Perfect January. February started strong with some drops. March intensity rose and hit rate dropped — health and personal goals absorbed the pressure.</p>
+    </div>
+
+    <!-- CARD 3: Goals by Category -->
+    <div class="card" data-idx="3">
+      <h3>By Category</h3>
+      <div style="margin-top:8px;">
+        <div class="cat-row"><span class="cat-icon">💰</span><span class="cat-name">Financial</span><span class="cat-score" style="color:var(--green);">10/10</span></div>
+        <div class="cat-row"><span class="cat-icon">🏗️</span><span class="cat-name">Business</span><span class="cat-score" style="color:var(--gold);">8/10</span></div>
+        <div class="cat-row"><span class="cat-icon">🤝</span><span class="cat-name">Relationships</span><span class="cat-score" style="color:var(--green);">8/8</span></div>
+        <div class="cat-row"><span class="cat-icon">👤</span><span class="cat-name">Personal</span><span class="cat-score" style="color:var(--gold);">8/11</span></div>
+        <div class="cat-row"><span class="cat-icon">💪</span><span class="cat-name">Health</span><span class="cat-score" style="color:var(--coral);">6/14</span></div>
+      </div>
+      <p style="font-size:0.85em; color:var(--dim); margin-top:16px;">Financial and Relationships were perfect. Health absorbed the most pressure — Zone 2 and exercise frequency were the main casualties as buildout intensified.</p>
+    </div>
+
+    <!-- CARD 4: Tasks -->
+    <div class="card" data-idx="4">
+      <h3>Task Allocation</h3>
+      <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:20px;">
+        <span class="big-num" style="font-size:2.4em;">91</span>
+        <span class="sub-num">of 104 completed</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label" style="width:120px;">Buildout</span>
+        <div class="progress-track"><div class="progress-fill" style="width:97%; background:var(--green);"></div></div>
+        <span class="progress-val">36/37</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label" style="width:120px;">Menu</span>
+        <div class="progress-track"><div class="progress-fill" style="width:75%; background:var(--gold);"></div></div>
+        <span class="progress-val">15/20</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label" style="width:120px;">Permitting</span>
+        <div class="progress-track"><div class="progress-fill" style="width:90%; background:var(--green);"></div></div>
+        <span class="progress-val">18/20</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label" style="width:120px;">Income</span>
+        <div class="progress-track"><div class="progress-fill" style="width:100%; background:var(--green);"></div></div>
+        <span class="progress-val">7/7</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label" style="width:120px;">Other</span>
+        <div class="progress-track"><div class="progress-fill" style="width:75%; background:var(--gold);"></div></div>
+        <span class="progress-val">15/20</span>
+      </div>
+      <p style="font-size:0.85em; color:var(--dim); margin-top:12px;">87% completion rate. Buildout & Equipment dominated with 37 tasks. Remaining open items are final pre-opening operational tasks.</p>
+    </div>
+
+    <!-- CARD 5: Needle Movers -->
+    <div class="card" data-idx="5">
+      <h3>Needle Movers</h3>
+      <div style="margin-top:8px;">
+        <div class="nm-item"><span class="nm-status">✅</span><span class="nm-text">Pass Plumbing Reinspection</span><span class="nm-date">Mar 21</span></div>
+        <div class="nm-item"><span class="nm-status">✅</span><span class="nm-text">Shop Ready for Health Inspection</span><span class="nm-date">Mar 28</span></div>
+        <div class="nm-item"><span class="nm-status">✅</span><span class="nm-text">Production Planning</span><span class="nm-date">Mar 21</span></div>
+        <div class="nm-item"><span class="nm-status">⏳</span><span class="nm-text">Health Department Final Approval</span><span class="nm-date">pending</span></div>
+        <div class="nm-item"><span class="nm-status">⏳</span><span class="nm-text">Opening Production Run</span><span class="nm-date">contingent</span></div>
+      </div>
+      <p style="font-size:0.85em; color:var(--dim); margin-top:16px;">3 of 5 achieved. The remaining 2 are gated on health department — a sequential dependency chain playing out exactly as the Hard-Won Rules predicted.</p>
+    </div>
+
+    <!-- CARD 6: Patterns -->
+    <div class="card" data-idx="6">
+      <h3>Patterns & Themes</h3>
+      <div style="margin-top:8px;">
+        <div class="pattern-item">
+          <div class="pattern-title">Relationships held steady under pressure</div>
+          <div class="pattern-desc">8/8 on Relationships goals. Friend hangs happened every month. This didn't slip when things got intense.</div>
+        </div>
+        <div class="pattern-item caution">
+          <div class="pattern-title">Health absorbed the business cost</div>
+          <div class="pattern-desc">Zone 2 dropped first, then exercise frequency. 6/14 Health goals. The pattern: when business pressure rises, body maintenance is what gets cut.</div>
+        </div>
+        <div class="pattern-item caution">
+          <div class="pattern-title">Opening dates kept sliding</div>
+          <div class="pattern-desc">March 1 → March 8-15 → April 6. Each shift was justified, but the Hard-Won Rule about sequential dependencies was validated repeatedly.</div>
+        </div>
+        <div class="pattern-item">
+          <div class="pattern-title">Financial goals: 10/10</div>
+          <div class="pattern-desc">Paycheck collected, Gretchen's job locked in, Monarch reviews consistent, budget with Gretchen established. The financial infrastructure is built.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 7: Where Time Went -->
+    <div class="card" data-idx="7">
+      <h3>Where Time Went</h3>
+      <div class="timeline-item">
+        <span class="timeline-month">Jan</span>
+        <div class="timeline-content"><strong>Reflection & Foundation.</strong> Camping trip, Life Ideals work, Norman meeting, Phillip budget, Clayton meetings, job search blocks, meditation daily. Spacious. Many workouts.</div>
+      </div>
+      <div class="timeline-item">
+        <span class="timeline-month">Feb</span>
+        <div class="timeline-content"><strong>Permits & Partnerships.</strong> Health dept application, plumbing plans, equipment moves, Abe conversation, Ciara coffee, Square setup, Westside Chamber event. Gretchen's job locked in. Buildout acceleration. Meditation present but thinning.</div>
+      </div>
+      <div class="timeline-item">
+        <span class="timeline-month">Mar</span>
+        <div class="timeline-content"><strong>Full Sprint.</strong> FRP, plumbing inspection, drywall, equipment from storage, 7+ hiring interviews, media meetings (Kristine, Courtney), health dept follow-ups, production planning, MarginEdge setup. Meditation gone. Workouts compressed.</div>
+      </div>
+    </div>
+
+    <!-- CARD 8: Milestones -->
+    <div class="card" data-idx="8">
+      <h3>Quarter Milestones</h3>
+      <div style="font-size:0.88em; line-height:2; color:#c0c0cc;">
+        <div>🏕️ <strong>Jan 13-16</strong> — Grayland camping trip</div>
+        <div>🤝 <strong>Jan 8</strong> — Norman meeting at Sano</div>
+        <div>📋 <strong>Feb 10</strong> — Health dept application submitted</div>
+        <div>🔧 <strong>Feb 19</strong> — Plumbing permits submitted</div>
+        <div>📰 <strong>Feb 27</strong> — Westside Wakeup Chamber event</div>
+        <div>🏗️ <strong>Mar 1</strong> — Interceptor install complete</div>
+        <div>✅ <strong>Mar 16</strong> — Plumbing inspection passed</div>
+        <div>📸 <strong>Mar 18</strong> — Pre-launch marketing live</div>
+        <div>🧑‍🍳 <strong>Mar 8-18</strong> — 7 staff interviews conducted</div>
+        <div>🏪 <strong>Mar 28</strong> — Shop ready for final inspection</div>
+      </div>
+    </div>
+
+    <!-- CARD 9: Ready -->
+    <div class="card" data-idx="9">
+      <h2 style="color:var(--green);">Ready to dig in.</h2>
+      <h1 style="font-size:1.6em;">Let's talk about the quarter.</h1>
+      <p style="margin-top:20px;">Scroll down for the full dashboard, or let's start the conversation.</p>
+    </div>
+
+  </div>
+
+  <div class="nav-dots" id="dots"></div>
+  <div class="nav-arrows">
+    <button id="prevBtn" onclick="go(-1)">←</button>
+    <button id="nextBtn" onclick="go(1)">→</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard">
+  <div class="dash-title">Dashboard</div>
+
+  <div class="stat-grid">
+    <div class="stat-box"><div class="stat-val" style="color:var(--green);">40</div><div class="stat-label">Goals Achieved</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--coral);">6</div><div class="stat-label">Not Achieved</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--gold);">6</div><div class="stat-label">Dropped</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--green);">91</div><div class="stat-label">Tasks Done</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--gold);">9</div><div class="stat-label">Tasks Open</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:var(--green);">75%</div><div class="stat-label">Goal Hit Rate</div></div>
+  </div>
+
+  <div class="dash-section">
+    <h3>Category Hit Rates</h3>
+    <div class="stat-grid" style="grid-template-columns: repeat(5, 1fr);">
+      <div class="stat-box"><div class="stat-val" style="color:var(--green); font-size:1.3em;">100%</div><div class="stat-label">Financial</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:var(--green); font-size:1.3em;">100%</div><div class="stat-label">Relations</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:var(--gold); font-size:1.3em;">80%</div><div class="stat-label">Business</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:var(--gold); font-size:1.3em;">73%</div><div class="stat-label">Personal</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:var(--coral); font-size:1.3em;">43%</div><div class="stat-label">Health</div></div>
+    </div>
+  </div>
+
+  <div class="dash-section">
+    <h3>Habits That Held vs. Broke</h3>
+    <div class="habit-row"><span class="habit-name">Weekly Planning & Reflection</span><span class="habit-status held">Held ✓</span></div>
+    <div class="habit-row"><span class="habit-name">Monarch Weekly Reviews</span><span class="habit-status held">Held ✓</span></div>
+    <div class="habit-row"><span class="habit-name">Friend Hangs (2+/month)</span><span class="habit-status held">Held ✓</span></div>
+    <div class="habit-row"><span class="habit-name">Strength Training 3x/wk</span><span class="habit-status wavered">Wavered</span></div>
+    <div class="habit-row"><span class="habit-name">Meditation</span><span class="habit-status broke">Dropped mid-Feb</span></div>
+    <div class="habit-row"><span class="habit-name">Zone 2 Cardio</span><span class="habit-status broke">Inconsistent</span></div>
+    <div class="habit-row"><span class="habit-name">Exercise 5/7 days</span><span class="habit-status broke">Broke in Mar</span></div>
+  </div>
+
+  <div class="dash-section">
+    <h3>Recurring Goals (2+ periods)</h3>
+    <div class="habit-row"><span class="habit-name">Investigate playgroups for June</span><span class="habit-status wavered">✅ Jan / ❌ Feb</span></div>
+    <div class="habit-row"><span class="habit-name">Playdate for June</span><span class="habit-status held">✅ Jan / ✅ Feb</span></div>
+    <div class="habit-row"><span class="habit-name">Effort→outcome language with June</span><span class="habit-status broke">✅ Jan / 🗑️ Feb / 🗑️ Mar</span></div>
+    <div class="habit-row"><span class="habit-name">Exercise 5/7 days</span><span class="habit-status wavered">✅ Jan-Feb / ❌ Mar</span></div>
+  </div>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const dotsContainer = document.getElementById('dots');
+const total = cards.length;
+let current = 0;
+let animating = false;
+
+// Build dots
+for (let i = 0; i < total; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.onclick = () => goTo(i);
+  dotsContainer.appendChild(d);
+}
+
+function updateDots() {
+  dotsContainer.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === total - 1;
+}
+
+function go(dir) {
+  if (animating) return;
+  const next = current + dir;
+  if (next < 0 || next >= total) return;
+  goTo(next);
+}
+
+function goTo(target) {
+  if (animating || target === current) return;
+  animating = true;
+  const dir = target > current ? 1 : -1;
+  const oldCard = cards[current];
+  const newCard = cards[target];
+
+  // Prepare incoming card on the correct side
+  newCard.style.transition = 'none';
+  newCard.style.transform = dir === 1 ? 'translateX(100%)' : 'translateX(-100%)';
+  newCard.style.opacity = '0';
+  newCard.classList.add('active');
+  newCard.offsetHeight; // force reflow
+
+  // Animate
+  newCard.style.transition = '';
+  newCard.style.transform = 'translateX(0)';
+  newCard.style.opacity = '1';
+
+  oldCard.style.transform = dir === 1 ? 'translateX(-100%)' : 'translateX(100%)';
+  oldCard.style.opacity = '0';
+
+  setTimeout(() => {
+    oldCard.classList.remove('active');
+    oldCard.style.transform = '';
+    oldCard.style.opacity = '';
+    oldCard.style.transition = '';
+    current = target;
+    updateDots();
+    animating = false;
+  }, 460);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') go(1);
+  if (e.key === 'ArrowLeft') go(-1);
+});
+
+// Touch swipe
+let touchStartX = 0;
+const vp = document.getElementById('viewport');
+vp.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX);
+vp.addEventListener('touchend', e => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 50) go(diff > 0 ? 1 : -1);
+});
+
+updateDots();
+</script>
+</body>
+</html>
