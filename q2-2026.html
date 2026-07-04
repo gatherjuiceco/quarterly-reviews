@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Q2 2026 — Quarterly Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #101418;
+    --card: #181e24;
+    --card-edge: #232b33;
+    --ink: #e8e6e1;
+    --ink-dim: #9aa3ab;
+    --ink-faint: #5c656d;
+    --green: #4ecca3;
+    --gold: #e2b714;
+    --coral: #e07c54;
+    --serif: 'Instrument Serif', serif;
+    --sans: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { background:var(--bg); color:var(--ink); font-family:var(--sans); line-height:1.5; }
+
+  /* ---------- Card deck ---------- */
+  .deck-wrap { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px 16px; position:relative; }
+  .deck { position:relative; width:100%; max-width:560px; height:640px; }
+  .card {
+    position:absolute; inset:0; background:var(--card); border:1px solid var(--card-edge);
+    border-radius:20px; padding:44px 40px; display:flex; flex-direction:column; justify-content:center;
+    transition:transform .45s cubic-bezier(.22,.9,.3,1), opacity .45s;
+    opacity:0; transform:translateX(60px); pointer-events:none; overflow-y:auto;
+  }
+  .card.active { opacity:1; transform:translateX(0); pointer-events:auto; }
+  .card.exit-left { opacity:0; transform:translateX(-60px); }
+  .card.no-transition { transition:none !important; }
+
+  .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:18px; }
+  .card h1 { font-family:var(--serif); font-size:56px; font-weight:400; line-height:1.05; }
+  .card h2 { font-family:var(--serif); font-size:34px; font-weight:400; line-height:1.15; margin-bottom:20px; }
+  .card p.lede { font-size:17px; color:var(--ink-dim); line-height:1.65; }
+  .accent { color:var(--green); }
+  .accent-gold { color:var(--gold); }
+  .accent-coral { color:var(--coral); }
+
+  .bignum { font-family:var(--serif); font-size:92px; line-height:1; margin:8px 0 4px; }
+  .bignum-label { font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-dim); }
+
+  .bar-row { display:flex; align-items:center; gap:12px; margin:11px 0; }
+  .bar-label { font-family:var(--mono); font-size:12px; color:var(--ink-dim); width:88px; flex-shrink:0; }
+  .bar-track { flex:1; height:8px; background:#232b33; border-radius:4px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:4px; background:var(--green); }
+  .bar-val { font-family:var(--mono); font-size:12px; color:var(--ink); width:44px; text-align:right; flex-shrink:0; }
+
+  .nm-line { display:flex; gap:12px; align-items:baseline; margin:9px 0; font-size:14px; }
+  .nm-mark { font-family:var(--mono); flex-shrink:0; }
+  .nm-date { font-family:var(--mono); font-size:11px; color:var(--ink-faint); flex-shrink:0; width:52px; }
+
+  .pattern { margin:16px 0; padding-left:16px; border-left:2px solid var(--card-edge); }
+  .pattern h4 { font-size:15px; font-weight:700; margin-bottom:3px; }
+  .pattern p { font-size:13.5px; color:var(--ink-dim); line-height:1.55; }
+  .pattern.good { border-color:var(--green); }
+  .pattern.warn { border-color:var(--gold); }
+  .pattern.bad { border-color:var(--coral); }
+
+  .month-block { margin:14px 0; }
+  .month-block h4 { font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); margin-bottom:5px; }
+  .month-block p { font-size:14px; color:var(--ink-dim); line-height:1.55; }
+
+  .tl { position:relative; padding-left:22px; }
+  .tl::before { content:''; position:absolute; left:5px; top:6px; bottom:6px; width:1px; background:var(--card-edge); }
+  .tl-item { position:relative; margin:12px 0; font-size:14px; }
+  .tl-item::before { content:''; position:absolute; left:-21px; top:6px; width:9px; height:9px; border-radius:50%; background:var(--green); }
+  .tl-item .tl-date { font-family:var(--mono); font-size:11px; color:var(--ink-faint); display:block; }
+
+  /* nav */
+  .dots { display:flex; gap:8px; margin-top:26px; }
+  .dot { width:7px; height:7px; border-radius:50%; background:var(--card-edge); cursor:pointer; transition:background .2s, transform .2s; }
+  .dot.on { background:var(--green); transform:scale(1.3); }
+  .nav-hint { font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:14px; letter-spacing:.08em; }
+  .arrows { position:absolute; inset:0; display:flex; justify-content:space-between; align-items:center; pointer-events:none; padding:0 4px; }
+  .arrow { pointer-events:auto; background:var(--card); border:1px solid var(--card-edge); color:var(--ink-dim); width:40px; height:40px; border-radius:50%; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:color .2s, border-color .2s; }
+  .arrow:hover { color:var(--green); border-color:var(--green); }
+  @media (max-width:660px){ .arrows{display:none;} .card{padding:32px 26px;} .card h1{font-size:42px;} .deck{height:600px;} }
+
+  /* ---------- Dashboard ---------- */
+  .dash { max-width:960px; margin:0 auto; padding:70px 24px 100px; }
+  .dash-title { font-family:var(--serif); font-size:40px; font-weight:400; margin-bottom:6px; }
+  .dash-sub { font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:40px; }
+  .stat-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:16px; margin-bottom:56px; }
+  .stat { background:var(--card); border:1px solid var(--card-edge); border-radius:14px; padding:22px; }
+  .stat .n { font-family:var(--serif); font-size:40px; line-height:1; }
+  .stat .l { font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-dim); margin-top:8px; }
+  .dash h3 { font-family:var(--serif); font-size:26px; font-weight:400; margin:44px 0 18px; }
+  .habit-cols { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media (max-width:640px){ .habit-cols{grid-template-columns:1fr;} }
+  .habit-box { background:var(--card); border:1px solid var(--card-edge); border-radius:14px; padding:24px; }
+  .habit-box h4 { font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase; margin-bottom:14px; }
+  .habit-box ul { list-style:none; }
+  .habit-box li { font-size:14px; color:var(--ink-dim); margin:9px 0; padding-left:18px; position:relative; }
+  .habit-box li::before { content:'—'; position:absolute; left:0; }
+  .held h4 { color:var(--green); } .held li::before { color:var(--green); }
+  .broke h4 { color:var(--coral); } .broke li::before { color:var(--coral); }
+  .footnote { font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:56px; line-height:1.7; }
+</style>
+</head>
+<body>
+
+<div class="deck-wrap">
+  <div class="deck" id="deck">
+
+    <!-- 1 · Title -->
+    <div class="card" data-i="0">
+      <div class="eyebrow">Quarterly Review</div>
+      <h1>Q2 <span class="accent">2026</span></h1>
+      <p class="lede" style="margin-top:18px;">March 31 — June 29, 2026<br><span style="font-family:var(--mono); font-size:13px; color:var(--ink-faint);">Gather 2.0 · Quarter One of Operations</span></p>
+    </div>
+
+    <!-- 2 · Theme -->
+    <div class="card" data-i="1">
+      <div class="eyebrow">The Story</div>
+      <h2>The quarter Gather 2.0 stopped being a plan and became a machine.</h2>
+      <p class="lede">Opened April 6, exited opening mode on schedule, and spent the next twelve weeks building systems on top of it — analytics, marketing engine, kiosk pilot, COGS discipline, Clayton accountability cadence. The business side hit nearly everything it aimed at. The quieter story: what kept slipping while the machine got built.</p>
+    </div>
+
+    <!-- 3 · Goals overview -->
+    <div class="card" data-i="2">
+      <div class="eyebrow">30-Day Goals · Q2 Periods</div>
+      <div class="bignum accent">72%</div>
+      <div class="bignum-label">13 of 18 achieved · Apr–Jun periods</div>
+      <div style="margin-top:30px;">
+        <div class="bar-row"><span class="bar-label">April</span><div class="bar-track"><div class="bar-fill" style="width:71%"></div></div><span class="bar-val">5/7</span></div>
+        <div class="bar-row"><span class="bar-label">May</span><div class="bar-track"><div class="bar-fill" style="width:50%; background:var(--gold);"></div></div><span class="bar-val">3/6</span></div>
+        <div class="bar-row"><span class="bar-label">June</span><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="bar-val">5/5</span></div>
+      </div>
+      <p class="lede" style="margin-top:24px; font-size:14px;">June was the first perfect period since January. May's misses: spending discipline, the No Birthday Party (dropped), couples counseling (deferred — then quietly started anyway).</p>
+    </div>
+
+    <!-- 4 · Goals by category -->
+    <div class="card" data-i="3">
+      <div class="eyebrow">Goals by Category · Q2</div>
+      <h2 style="font-size:28px;">Business and Health ran the table.</h2>
+      <div class="bar-row"><span class="bar-label">Business</span><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="bar-val">4/4</span></div>
+      <div class="bar-row"><span class="bar-label">Health</span><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="bar-val">3/3</span></div>
+      <div class="bar-row"><span class="bar-label">Financial</span><div class="bar-track"><div class="bar-fill" style="width:67%; background:var(--gold);"></div></div><span class="bar-val">2/3</span></div>
+      <div class="bar-row"><span class="bar-label">Relations.</span><div class="bar-track"><div class="bar-fill" style="width:50%; background:var(--gold);"></div></div><span class="bar-val">2/4</span></div>
+      <div class="bar-row"><span class="bar-label">Personal</span><div class="bar-track"><div class="bar-fill" style="width:50%; background:var(--coral);"></div></div><span class="bar-val">2/4</span></div>
+      <p class="lede" style="margin-top:22px; font-size:14px;">The misses cluster: June's playdate infrastructure, the No Birthday Party (missed, then dropped), May spending. Every miss this quarter lives outside the business.</p>
+    </div>
+
+    <!-- 5 · Task allocation -->
+    <div class="card" data-i="4">
+      <div class="eyebrow">Tasks · Where the Work Went</div>
+      <div class="bignum">195</div>
+      <div class="bignum-label">tasks · 183 completed · 2 still open</div>
+      <div style="margin-top:26px;">
+        <div class="bar-row"><span class="bar-label">Marketing</span><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="bar-val">35</span></div>
+        <div class="bar-row"><span class="bar-label">Ops misc.</span><div class="bar-track"><div class="bar-fill" style="width:94%"></div></div><span class="bar-val">33</span></div>
+        <div class="bar-row"><span class="bar-label">Kiosk</span><div class="bar-track"><div class="bar-fill" style="width:57%"></div></div><span class="bar-val">20</span></div>
+        <div class="bar-row"><span class="bar-label">Analytics</span><div class="bar-track"><div class="bar-fill" style="width:46%"></div></div><span class="bar-val">16</span></div>
+        <div class="bar-row"><span class="bar-label">Ops setup</span><div class="bar-track"><div class="bar-fill" style="width:31%"></div></div><span class="bar-val">11</span></div>
+        <div class="bar-row"><span class="bar-label">Integrations</span><div class="bar-track"><div class="bar-fill" style="width:31%"></div></div><span class="bar-val">11</span></div>
+        <div class="bar-row"><span class="bar-label">COGS</span><div class="bar-track"><div class="bar-fill" style="width:23%; background:var(--gold);"></div></div><span class="bar-val">8</span></div>
+      </div>
+      <p class="lede" style="margin-top:20px; font-size:14px;">Marketing was the single biggest sink — 35 tasks. Twelve projects closed fully. Both open tasks are handoff work: Brooke's bookkeeping Looms and training migration.</p>
+    </div>
+
+    <!-- 6 · Needle movers -->
+    <div class="card" data-i="5">
+      <div class="eyebrow">Needle Movers</div>
+      <div class="bignum accent">24<span style="font-size:44px; color:var(--ink-faint);">/29</span></div>
+      <div class="bignum-label">hit rate ~83% · 4 missed · 1 carried</div>
+      <div style="margin-top:22px;">
+        <div class="nm-line"><span class="nm-mark accent-coral">✕</span><span class="nm-date">Apr</span><span>ATV $22.25 — missed twice, both times crowded out by production/coaching time</span></div>
+        <div class="nm-line"><span class="nm-mark accent-coral">✕</span><span class="nm-date">Apr</span><span>Party invites out — "didn't have the time or mental space"</span></div>
+        <div class="nm-line"><span class="nm-mark accent-gold">⚡</span><span class="nm-date">May</span><span>Training system — 4× bigger than scoped, carried across weeks, finished as a slog</span></div>
+        <div class="nm-line"><span class="nm-mark accent">✓</span><span class="nm-date">Jun</span><span>First Clayton biweekly run as a meeting worth keeping — and it changed behavior (COGS sprint followed)</span></div>
+        <div class="nm-line"><span class="nm-mark accent">✓</span><span class="nm-date">Jun</span><span>Electrician bid in, working interviews ×2, Top Spend count done — all three Q3 gates cleared in the final week</span></div>
+      </div>
+    </div>
+
+    <!-- 7 · Patterns -->
+    <div class="card" data-i="6">
+      <div class="eyebrow">Patterns & Themes</div>
+      <div class="pattern good"><h4>The system compounds</h4><p>Kiosk: idea → live in 8 weeks. COGS: named out loud to Clayton June 9 → 8-task sprint → fixed by June 27. Saying numbers to someone with a stake works.</p></div>
+      <div class="pattern good"><h4>Structure deepened, not just held</h4><p>Daily planning appeared June 1 and ran all 30 days. Biweekly Clayton cadence established. Counseling started weekly despite being "deferred."</p></div>
+      <div class="pattern bad"><h4>June-the-kid goals keep dying</h4><p>Playdate infrastructure, the party, playgroups — missed or dropped across 4+ consecutive periods, spanning two quarters. The only domain with a repeating failure signature.</p></div>
+      <div class="pattern warn"><h4>Cardio quietly exited</h4><p>"Strength &amp; Zone 2" became just "Strength" on the calendar by late May. Lifts are at all-time highs; the aerobic half of the fitness framework has no goal, no block, no data.</p></div>
+    </div>
+
+    <!-- 8 · Where time went -->
+    <div class="card" data-i="7">
+      <div class="eyebrow">Where Time Went</div>
+      <div class="month-block"><h4>April — Opening</h4><p>Inspection, production days, store setup, floor time. Biz Dev blocks emerge in week 3 — ON work started 2 weeks after doors opened.</p></div>
+      <div class="month-block"><h4>May — Building</h4><p>"On Time" and Office Hours blocks dominate. Kiosk install, ESB defense sprint, LTO launch, marketing engine buildout. One friend hang (Alex, May 19).</p></div>
+      <div class="month-block"><h4>June — Events & Accountability</h4><p>Three community events, two Clayton business meetings, weekly counseling, daily planning every day. Then June 20–27: six floor shifts (~34 hrs) covering the staffing gap.</p></div>
+    </div>
+
+    <!-- 9 · Milestones -->
+    <div class="card" data-i="8">
+      <div class="eyebrow">Quarter Milestones</div>
+      <div class="tl">
+        <div class="tl-item"><span class="tl-date">Apr 3</span>Final health inspection passed</div>
+        <div class="tl-item"><span class="tl-date">Apr 6</span>Gather 2.0 opens</div>
+        <div class="tl-item"><span class="tl-date">Apr 30</span>Kiosk go/no-go decided with Clayton</div>
+        <div class="tl-item"><span class="tl-date">May 8</span>Orange Creamsicle LTO launches</div>
+        <div class="tl-item"><span class="tl-date">May 29</span>Kiosk installed at Simply Hot Yoga</div>
+        <div class="tl-item"><span class="tl-date">Jun 5</span>Clayton conversation — cadence &amp; role clarity</div>
+        <div class="tl-item"><span class="tl-date">Jun 9</span>First biweekly check-in; COGS named out loud</div>
+        <div class="tl-item"><span class="tl-date">Jun 13</span>SHY Anniversary pop-up</div>
+        <div class="tl-item"><span class="tl-date">Jun 28</span>Girl Walk × OG Muscle event</div>
+        <div class="tl-item"><span class="tl-date">Jun 29</span>Electrician bid lands — soup program gate clears</div>
+      </div>
+    </div>
+
+    <!-- 10 · Ready -->
+    <div class="card" data-i="9">
+      <div class="eyebrow">That's the data</div>
+      <h2>Now the part the numbers can't do.</h2>
+      <p class="lede">Scroll down for the full dashboard, or head back to the chat — we'll start with the story of the quarter in your own words.</p>
+    </div>
+
+  </div>
+
+  <div class="arrows">
+    <button class="arrow" id="prevBtn" aria-label="Previous card">←</button>
+    <button class="arrow" id="nextBtn" aria-label="Next card">→</button>
+  </div>
+
+  <div class="dots" id="dots"></div>
+  <div class="nav-hint">← → keys · tap dots · swipe</div>
+</div>
+
+<!-- ---------- Dashboard ---------- -->
+<div class="dash">
+  <div class="dash-title">Quarter Dashboard</div>
+  <div class="dash-sub">Q2 2026 · Mar 31 – Jun 29</div>
+
+  <div class="stat-grid">
+    <div class="stat"><div class="n accent">13</div><div class="l">Goals achieved (Q2)</div></div>
+    <div class="stat"><div class="n accent-coral">3</div><div class="l">Not achieved</div></div>
+    <div class="stat"><div class="n" style="color:var(--ink-faint)">1 + 1</div><div class="l">Dropped + deferred</div></div>
+    <div class="stat"><div class="n accent">72%</div><div class="l">Goal hit rate</div></div>
+    <div class="stat"><div class="n">195</div><div class="l">Tasks total</div></div>
+    <div class="stat"><div class="n accent">183</div><div class="l">Tasks completed</div></div>
+    <div class="stat"><div class="n accent-gold">2</div><div class="l">Still open (both handoffs)</div></div>
+    <div class="stat"><div class="n accent">~83%</div><div class="l">Needle mover hit rate</div></div>
+    <div class="stat"><div class="n accent">12</div><div class="l">Projects closed</div></div>
+    <div class="stat"><div class="n">17</div><div class="l">Projects active</div></div>
+    <div class="stat"><div class="n accent">448</div><div class="l">Belt squat e1RM (base 317)</div></div>
+    <div class="stat"><div class="n accent">377</div><div class="l">Deadlift e1RM (base 270)</div></div>
+    <div class="stat"><div class="n accent">96</div><div class="l">DB bench e1RM (base 64)</div></div>
+    <div class="stat"><div class="n accent">4</div><div class="l">Date nights (May–Jun)</div></div>
+    <div class="stat"><div class="n accent-coral">1</div><div class="l">Friend hangs all quarter</div></div>
+    <div class="stat"><div class="n accent-gold">6</div><div class="l">Floor shifts, wk of Jun 20</div></div>
+  </div>
+
+  <h3>Category hit rates — Q2 goals</h3>
+  <div style="max-width:640px;">
+    <div class="bar-row"><span class="bar-label">Business</span><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="bar-val">100%</span></div>
+    <div class="bar-row"><span class="bar-label">Health</span><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="bar-val">100%</span></div>
+    <div class="bar-row"><span class="bar-label">Financial</span><div class="bar-track"><div class="bar-fill" style="width:67%; background:var(--gold);"></div></div><span class="bar-val">67%</span></div>
+    <div class="bar-row"><span class="bar-label">Relations.</span><div class="bar-track"><div class="bar-fill" style="width:50%; background:var(--gold);"></div></div><span class="bar-val">50%</span></div>
+    <div class="bar-row"><span class="bar-label">Personal</span><div class="bar-track"><div class="bar-fill" style="width:50%; background:var(--coral);"></div></div><span class="bar-val">50%</span></div>
+  </div>
+
+  <h3>Habits</h3>
+  <div class="habit-cols">
+    <div class="habit-box held">
+      <h4>Held / Built</h4>
+      <ul>
+        <li>Strength training 3×/week — every week of the quarter</li>
+        <li>Weekly planning + reflection — unbroken</li>
+        <li>Daily planning — new in June, ran all 30 days</li>
+        <li>Date nights with Gretchen — 2/month, May and June</li>
+        <li>Monarch reviews — lapsed mid-quarter, re-established in June</li>
+        <li>Body measurements — established May, sustained June</li>
+        <li>Counseling — started June, weekly since</li>
+      </ul>
+    </div>
+    <div class="habit-box broke">
+      <h4>Broke / Faded</h4>
+      <ul>
+        <li>Zone 2 cardio — on the calendar through mid-May, then gone</li>
+        <li>Friend hang cadence — 2/month target → 1 all quarter</li>
+        <li>May spending budgets — clothing, restaurants, fun money all blown</li>
+        <li>June's playdate infrastructure — never built (4th consecutive period)</li>
+        <li>Progress photos — backed off (framing problem, not effort)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footnote">
+    Sources: Quarterly Review Brief (generated 7/4/2026) · Notion reference docs · Fantastical Apr–Jun 2026.<br>
+    Q2 goal counts use the April, May, and June goal periods. The brief's 70-goal summary includes Q1 periods (Jan–Mar).<br>
+    Life Ideals last reviewed 2026-01-08 — the 6-month review window opens this week.
+  </div>
+</div>
+
+<script>
+(function(){
+  const cards = Array.from(document.querySelectorAll('.card'));
+  const dotsEl = document.getElementById('dots');
+  let cur = 0;
+  cards.forEach((c,i)=>{
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0?' on':'');
+    d.addEventListener('click', ()=>go(i));
+    dotsEl.appendChild(d);
+  });
+  const dots = Array.from(dotsEl.children);
+  cards[0].classList.add('active');
+
+  function go(n){
+    if(n===cur || n<0 || n>=cards.length) return;
+    const forward = n > cur;
+    const out = cards[cur], inn = cards[n];
+    if(forward){
+      out.classList.remove('active'); out.classList.add('exit-left');
+      inn.classList.remove('exit-left');
+      inn.classList.add('active');
+      setTimeout(()=>out.classList.remove('exit-left'), 460);
+    } else {
+      // Backward: pre-position incoming card on the LEFT with transitions disabled,
+      // force reflow, re-enable, then animate to center.
+      inn.classList.add('no-transition');
+      inn.classList.remove('active');
+      inn.classList.add('exit-left');
+      void inn.offsetWidth; // force reflow
+      inn.classList.remove('no-transition');
+      inn.classList.remove('exit-left');
+      inn.classList.add('active');
+      out.classList.remove('active'); // exits right (default hidden transform)
+    }
+    dots[cur].classList.remove('on');
+    dots[n].classList.add('on');
+    cur = n;
+  }
+  document.getElementById('nextBtn').addEventListener('click', ()=>go(cur+1));
+  document.getElementById('prevBtn').addEventListener('click', ()=>go(cur-1));
+  document.addEventListener('keydown', e=>{
+    if(e.key==='ArrowRight') go(cur+1);
+    if(e.key==='ArrowLeft') go(cur-1);
+  });
+  // swipe
+  let sx=null;
+  const deck = document.getElementById('deck');
+  deck.addEventListener('touchstart', e=>{ sx=e.touches[0].clientX; }, {passive:true});
+  deck.addEventListener('touchend', e=>{
+    if(sx===null) return;
+    const dx = e.changedTouches[0].clientX - sx;
+    if(Math.abs(dx)>48) go(cur + (dx<0?1:-1));
+    sx=null;
+  }, {passive:true});
+  // tap card to advance
+  deck.addEventListener('click', e=>{
+    if(e.target.closest('.arrow')||e.target.closest('.dot')) return;
+    if(window.getSelection().toString()) return;
+    go(cur+1);
+  });
+})();
+</script>
+</body>
+</html>
