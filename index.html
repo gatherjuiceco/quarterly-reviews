@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Quarterly Reviews</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #101418;
+    --card: #181e24;
+    --card-edge: #232b33;
+    --ink: #e8e6e1;
+    --ink-dim: #9aa3ab;
+    --ink-faint: #5c656d;
+    --green: #4ecca3;
+    --gold: #e2b714;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--ink); font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 20px; }
+  .eyebrow { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:14px; }
+  h1 { font-family:'Instrument Serif',serif; font-size:44px; font-weight:400; margin-bottom:40px; }
+  .list { width:100%; max-width:480px; display:flex; flex-direction:column; gap:14px; }
+  a.review {
+    display:flex; align-items:baseline; justify-content:space-between; gap:16px;
+    background:var(--card); border:1px solid var(--card-edge); border-radius:16px;
+    padding:24px 28px; text-decoration:none; color:var(--ink);
+    transition:border-color .2s, transform .2s;
+  }
+  a.review:hover { border-color:var(--green); transform:translateY(-2px); }
+  .q { font-family:'Instrument Serif',serif; font-size:26px; }
+  .q span { color:var(--green); }
+  .range { font-family:'DM Mono',monospace; font-size:12px; color:var(--ink-faint); }
+  .note { font-family:'DM Mono',monospace; font-size:11px; color:var(--ink-faint); margin-top:48px; letter-spacing:.08em; }
+</style>
+</head>
+<body>
+  <div class="eyebrow">Sean · Archive</div>
+  <h1>Quarterly Reviews</h1>
+  <div class="list">
+    <a class="review" href="q2-2026.html"><span class="q">Q2 <span>2026</span></span><span class="range">Mar 31 – Jun 29</span></a>
+    <a class="review" href="q1-2026.html"><span class="q">Q1 <span>2026</span></span><span class="range">Jan 1 – Mar 30</span></a>
+  </div>
+  <div class="note">one card per quarter · newest first</div>
+</body>
+</html>
