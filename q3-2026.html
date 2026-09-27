@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Q3 2026 — Quarterly Review</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#0f1311; --panel:#171c19; --panel2:#1e2521; --line:#2b3430;
+  --ink:#e8ede9; --muted:#95a39b; --faint:#5f6d66;
+  --good:#4ecca3; --mid:#e2b714; --weak:#e07c54; --none:#3a4540;
+  --serif:"Instrument Serif", Georgia, "Times New Roman", serif;
+  --sans:"DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:24px 64px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+h1,h2,h3{text-wrap:balance;margin:0;font-weight:400}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- cards ---------- */
+.deck{display:flex;flex-direction:column;gap:14px}
+.stage{position:relative;height:540px;overflow:hidden;border-radius:14px;background:var(--panel);border:1px solid var(--line);touch-action:pan-y}
+.card{position:absolute;inset:0;padding:32px 28px;display:flex;flex-direction:column;gap:18px;transform:translateX(100%);transition:transform .42s cubic-bezier(.2,.7,.2,1);overflow-y:auto}
+.card.is-current{transform:translateX(0)}
+.card.is-left{transform:translateX(-100%)}
+.card.no-anim{transition:none}
+@media (prefers-reduced-motion: reduce){.card{transition:none}}
+.card h2{font-family:var(--serif);font-size:clamp(30px,6vw,42px);line-height:1.08}
+.card p{margin:0;color:var(--ink);max-width:60ch}
+.card .sub{color:var(--muted)}
+.big{font-family:var(--serif);font-size:clamp(64px,16vw,112px);line-height:.9}
+.controls{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dots{display:flex;gap:7px;flex-wrap:wrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--none);border:0;padding:0;cursor:pointer}
+.dot[aria-current="true"]{background:var(--ink)}
+.navbtn{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer}
+.navbtn:disabled{opacity:.35;cursor:default}
+button:focus-visible{outline:2px solid var(--good);outline-offset:2px}
+
+/* bars */
+.bars{display:flex;flex-direction:column;gap:14px}
+.bar-row{display:grid;grid-template-columns:minmax(110px,34%) 1fr auto;gap:12px;align-items:center}
+.bar-row .name{font-size:14px}
+.track{height:10px;background:var(--panel2);border-radius:5px;overflow:hidden}
+.fill{height:100%;border-radius:5px}
+.bar-row .val{font-family:var(--mono);font-size:13px;color:var(--muted);min-width:5ch;text-align:right;font-variant-numeric:tabular-nums}
+.track.empty{background:repeating-linear-gradient(90deg,var(--none) 0 6px,transparent 6px 12px);opacity:.6}
+
+/* week strip */
+.weeks{display:grid;grid-template-columns:repeat(12,1fr);gap:5px}
+.wk{display:flex;flex-direction:column;align-items:center;gap:5px}
+.wk .cell{width:100%;min-height:54px;border-radius:6px;background:var(--panel2);display:flex;flex-direction:column-reverse;gap:3px;padding:4px}
+.wk .cell.blank{background:transparent;border:1px dashed var(--none)}
+.pip{height:10px;border-radius:3px}
+.wk .d{font-family:var(--mono);font-size:10px;color:var(--faint)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+.list{display:flex;flex-direction:column;gap:14px;margin:0;padding:0;list-style:none}
+.list li{display:grid;grid-template-columns:14px 1fr;gap:10px}
+.list .mark{width:8px;height:8px;border-radius:50%;margin-top:8px}
+.list b{font-weight:600}
+.months{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
+.month h3{font-family:var(--serif);font-size:26px;margin-bottom:6px}
+.month ul{margin:0;padding-left:16px;color:var(--ink);font-size:14px;display:flex;flex-direction:column;gap:4px}
+.timeline{display:flex;flex-direction:column;gap:0;border-left:1px solid var(--line);margin-left:4px}
+.tl{display:grid;grid-template-columns:62px 1fr;gap:10px;padding:5px 0 5px 14px;position:relative;font-size:14px}
+.tl::before{content:"";position:absolute;left:-4px;top:12px;width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.tl.k::before{background:var(--good)}
+.tl.w::before{background:var(--weak)}
+.tl .dt{font-family:var(--mono);font-size:12px;color:var(--muted);padding-top:1px}
+
+/* dashboard */
+.dash{display:flex;flex-direction:column;gap:22px}
+.dash h2{font-family:var(--serif);font-size:30px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stat{background:var(--panel);padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.stat .n{font-family:var(--mono);font-size:24px;font-variant-numeric:tabular-nums}
+.stat .t{font-size:12px;color:var(--muted)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.box h3{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.box ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:5px;font-size:14px}
+.note{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;max-width:70ch}
+.good{color:var(--good)} .mid{color:var(--mid)} .weak{color:var(--weak)}
+@media (max-width:520px){
+  .stage{height:600px}
+  .card{padding:24px 18px}
+  .weeks{gap:3px}
+  .bar-row{grid-template-columns:1fr auto;}
+  .bar-row .track{grid-column:1 / -1;grid-row:2}
+}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+<section class="deck" aria-label="Q3 2026 summary cards">
+  <div class="stage" id="stage">
+
+    <article class="card">
+      <span class="label">Gather Juice Co. · Quarterly review</span>
+      <div class="big">Q3</div>
+      <h2>July 1 – September 30, 2026</h2>
+      <p class="sub">Built from the Quarterly Review Brief (run 9/25), the Goals and Needle Movers databases, and your calendar. Five days are still left in the quarter, and September's count on 9/30 isn't in yet.</p>
+    </article>
+
+    <article class="card">
+      <span class="label">The shape of it</span>
+      <h2>A quarter that built a lot and set less direction as it went.</h2>
+      <p>July had Maleah hired and trained, the One-Year Plan written, and a goal and needle-mover in every week. August brought camping, the marketing cadence, and the move to Klaviyo. In September the August books landed at $1,529 NOI, below the $1,875 floor, and the work turned to cost structure and revenue analysis. September also had no goals set, and half its weeks had no needle-mover.</p>
+    </article>
+
+    <article class="card">
+      <span class="label">Goals · by month</span>
+      <div class="big">7<span style="font-size:.45em;color:var(--muted)"> of 10</span></div>
+      <div class="bars">
+        <div class="bar-row"><span class="name">July</span><div class="track"><div class="fill" style="width:80%;background:var(--good)"></div></div><span class="val">4/5</span></div>
+        <div class="bar-row"><span class="name">August</span><div class="track"><div class="fill" style="width:60%;background:var(--mid)"></div></div><span class="val">3/5</span></div>
+        <div class="bar-row"><span class="name">September</span><div class="track empty"></div><span class="val">none set</span></div>
+      </div>
+      <p class="sub">Q2 ran at 76% across 70 goals. Q3's rate is similar, but it covers two months, not three.</p>
+    </article>
+
+    <article class="card">
+      <span class="label">Goals · by category</span>
+      <div class="bars">
+        <div class="bar-row"><span class="name">Personal</span><div class="track"><div class="fill" style="width:100%;background:var(--good)"></div></div><span class="val">2/2</span></div>
+        <div class="bar-row"><span class="name">Relationships</span><div class="track"><div class="fill" style="width:100%;background:var(--good)"></div></div><span class="val">2/2</span></div>
+        <div class="bar-row"><span class="name">Business</span><div class="track"><div class="fill" style="width:50%;background:var(--mid)"></div></div><span class="val">1/2</span></div>
+        <div class="bar-row"><span class="name">Financial</span><div class="track"><div class="fill" style="width:50%;background:var(--mid)"></div></div><span class="val">1/2</span></div>
+        <div class="bar-row"><span class="name">Health</span><div class="track"><div class="fill" style="width:50%;background:var(--mid)"></div></div><span class="val">1/2</span></div>
+      </div>
+      <p class="sub">All three misses were friction goals, not capacity ones: the team feedback cycle, blood-pressure readings, and July's discretionary budget sit-down.</p>
+    </article>
+
+    <article class="card">
+      <span class="label">Tasks · where the work went</span>
+      <div class="big mono" style="font-family:var(--serif)">118</div>
+      <p class="sub">completed · 15 open at quarter's end</p>
+      <div class="bars">
+        <div class="bar-row"><span class="name">Marketing &amp; retention</span><div class="track"><div class="fill" style="width:100%;background:var(--good)"></div></div><span class="val">32</span></div>
+        <div class="bar-row"><span class="name">Unassigned</span><div class="track"><div class="fill" style="width:87.5%;background:var(--muted)"></div></div><span class="val">28</span></div>
+        <div class="bar-row"><span class="name">Cost &amp; COGS</span><div class="track"><div class="fill" style="width:71.9%;background:var(--good)"></div></div><span class="val">23</span></div>
+        <div class="bar-row"><span class="name">Revenue strategy</span><div class="track"><div class="fill" style="width:43.8%;background:var(--good)"></div></div><span class="val">14</span></div>
+        <div class="bar-row"><span class="name">Hiring &amp; training</span><div class="track"><div class="fill" style="width:25%;background:var(--good)"></div></div><span class="val">8</span></div>
+        <div class="bar-row"><span class="name">Events</span><div class="track"><div class="fill" style="width:21.9%;background:var(--good)"></div></div><span class="val">7</span></div>
+        <div class="bar-row"><span class="name">Other projects</span><div class="track"><div class="fill" style="width:18.8%;background:var(--good)"></div></div><span class="val">6</span></div>
+      </div>
+    </article>
+
+    <article class="card">
+      <span class="label">Needle-movers · week by week</span>
+      <div class="weeks" id="weeks"></div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--good)"></i>Achieved 10</span>
+        <span><i class="sw" style="background:var(--mid)"></i>Partial 1</span>
+        <span><i class="sw" style="background:var(--weak)"></i>Missed 3</span>
+        <span><i class="sw" style="background:var(--muted)"></i>Blocked 1</span>
+        <span><i class="sw" style="border:1px dashed var(--muted)"></i>None set</span>
+      </div>
+      <p>July had needle-movers every week. From August on, four of eight weeks had none, including two in a row in mid-September. Both August misses fell in camping week.</p>
+    </article>
+
+    <article class="card">
+      <span class="label">Patterns</span>
+      <ul class="list">
+        <li><i class="mark" style="background:var(--mid)"></i><p><b>The execution stayed strong while direction-setting thinned.</b> Task output held steady, but September lost its monthly goals and half its needle-movers, and that was the month the numbers turned against you.</p></li>
+        <li><i class="mark" style="background:var(--weak)"></i><p><b>Every miss was something low-effort but uncomfortable.</b> Your own outcome notes: the Berkley conversation was "opportunity but not the motivation", the BP readings "I honestly didn't even try", and the July budget sitting "didn't even really make a solid attempt."</p></li>
+        <li><i class="mark" style="background:var(--good)"></i><p><b>Personal life got real, dated wins.</b> Camping was booked and taken, there were outings with Gretchen, and opener training was designed. The One-Year Plan's personal weighting shows up in the results.</p></li>
+        <li><i class="mark" style="background:var(--muted)"></i><p><b>Your calendar shows you back on the floor.</b> 7shifts has you on 10 shifts between 9/12 and 9/25, nine of them opens, in the same two weeks the 13 hours came off the schedule.</p></li>
+      </ul>
+    </article>
+
+    <article class="card">
+      <span class="label">Where time went</span>
+      <div class="months">
+        <div class="month"><h3>July</h3><ul><li>Five interviews, two working interviews, Maleah hired</li><li>Training modules 3–4 rebuilt</li><li>Brooke bookkeeping Looms</li><li>Tacoma Girl Walk pop-up</li><li>One-Year Plan drafted</li></ul></div>
+        <div class="month"><h3>August</h3><ul><li>Loyalty and upsell trainings launched</li><li>Marketing cadence and content menu</li><li>Taidnapam camping 8/16–19</li><li>Budget sessions with Gretchen</li><li>Klaviyo foundation and consent work</li></ul></div>
+        <div class="month"><h3>September</h3><ul><li>First Klaviyo send 9/5</li><li>August close led to Project Cost Structure 9/12</li><li>Five 2H revenue reports</li><li>PMIX cleanup and recipe correction</li><li>Opening shifts most mornings from 9/16</li></ul></div>
+      </div>
+    </article>
+
+    <article class="card">
+      <span class="label">Milestones</span>
+      <div class="timeline">
+        <div class="tl"><span class="dt">Jul 7</span><span>Maleah working interview</span></div>
+        <div class="tl"><span class="dt">Jul 12</span><span>Tacoma Girl Walk pop-up</span></div>
+        <div class="tl k"><span class="dt">Jul 18</span><span>Maleah hired</span></div>
+        <div class="tl"><span class="dt">Jul 28</span><span>Win-back emails and VIP notes sent</span></div>
+        <div class="tl k"><span class="dt">Jul 31</span><span>First true-period inventory count</span></div>
+        <div class="tl"><span class="dt">Aug 4</span><span>One-Year Plan finalized, loyalty and upsell trainings</span></div>
+        <div class="tl k"><span class="dt">Aug 16</span><span>Taidnapam, three days away</span></div>
+        <div class="tl"><span class="dt">Aug 31</span><span>Klaviyo loyalty flow live</span></div>
+        <div class="tl k"><span class="dt">Sep 5</span><span>First Klaviyo send to real customers</span></div>
+        <div class="tl"><span class="dt">Sep 8</span><span>Labs drawn (Quest)</span></div>
+        <div class="tl w"><span class="dt">Sep 12</span><span>August NOI $1,529, Project Cost Structure opened</span></div>
+        <div class="tl"><span class="dt">Sep 18</span><span>13 hours cut from the FOH schedule</span></div>
+        <div class="tl"><span class="dt">Sep 23</span><span>Feedback rhythm retired, NOI priority set</span></div>
+        <div class="tl k"><span class="dt">Sep 25</span><span>Recipes corrected ahead of the 9/30 count</span></div>
+      </div>
+    </article>
+
+    <article class="card">
+      <span class="label">Next</span>
+      <h2>The numbers are the easy part.</h2>
+      <p>The review starts with your story of the quarter, then works through Life Ideals, the One-Year Plan, patterns, and each area, and ends with October's goals. There's a full dashboard below the cards.</p>
+      <p class="sub">Arrow keys, swipe, or the buttons below move between cards.</p>
+    </article>
+
+  </div>
+  <div class="controls">
+    <button class="navbtn" id="prev" type="button">← Back</button>
+    <div class="dots" id="dots" role="tablist" aria-label="Cards"></div>
+    <button class="navbtn" id="next" type="button">Next →</button>
+  </div>
+</section>
+
+<section class="dash" aria-label="Quarter dashboard">
+  <h2>Dashboard</h2>
+  <div class="grid">
+    <div class="stat"><span class="n good">7</span><span class="t">Goals achieved</span></div>
+    <div class="stat"><span class="n weak">3</span><span class="t">Goals missed</span></div>
+    <div class="stat"><span class="n">0</span><span class="t">Goals dropped</span></div>
+    <div class="stat"><span class="n">70%</span><span class="t">Goal hit rate (Jul–Aug)</span></div>
+    <div class="stat"><span class="n">133</span><span class="t">Tasks tracked</span></div>
+    <div class="stat"><span class="n good">118</span><span class="t">Tasks completed</span></div>
+    <div class="stat"><span class="n">15</span><span class="t">Tasks open</span></div>
+    <div class="stat"><span class="n mid">67%</span><span class="t">Needle-mover hit rate (10 of 15)</span></div>
+    <div class="stat"><span class="n weak">4 / 12</span><span class="t">Weeks with no needle-mover</span></div>
+    <div class="stat"><span class="n weak">$1,529</span><span class="t">August NOI (floor $1,875)</span></div>
+    <div class="stat"><span class="n good">410</span><span class="t">Deadlift e1RM (baseline 270)</span></div>
+    <div class="stat"><span class="n good">106</span><span class="t">DB bench e1RM (baseline 64)</span></div>
+  </div>
+
+  <div class="cols">
+    <div class="box">
+      <h3>Goal hit rate by category</h3>
+      <ul>
+        <li>Personal <span class="good mono">2/2</span></li>
+        <li>Relationships <span class="good mono">2/2</span></li>
+        <li>Business <span class="mid mono">1/2</span> (COGS yes, feedback cycle no)</li>
+        <li>Financial <span class="mid mono">1/2</span> (July no, August yes)</li>
+        <li>Health <span class="mid mono">1/2</span> (weight yes, BP no)</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Habits that held</h3>
+      <ul>
+        <li>Daily planning, every day on the calendar</li>
+        <li>Weekly reflection and planning</li>
+        <li>Four-day lifting split, mostly (legs the exception)</li>
+        <li>Weekly budget work with Gretchen (August)</li>
+        <li>Weekly counseling</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Habits that broke</h3>
+      <ul>
+        <li>Monthly goal session, skipped in September</li>
+        <li>Weekly needle-mover, blank four weeks</li>
+        <li>Blood-pressure readings, barely started</li>
+        <li>Body measurements, five cycles missed</li>
+        <li>Team feedback, priority retired 9/23</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Still open going into Q4</h3>
+      <ul>
+        <li>Klaviyo: birthday, Flow 2 backlog, the 336 who returned once</li>
+        <li>SPLH standard and scheduling to projected sales (due 9/30)</li>
+        <li>Marketing doctrine, 10 rules awaiting a ruling</li>
+        <li>Walk-in cooler, blocked on financing since July</li>
+        <li>October's three-day block, still unnamed</li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="note">About the data: the brief's goal section also pulled April–June (it reports 28 goals), and its closed-projects list includes Q2 opening projects. Figures here use July–September only. Needle-movers run from the 7/6 week through the 9/21 week. The 9/30 inventory count and September financials are not in yet.</p>
+</section>
+</div>
+
+<script>
+(function(){
+  // Week strip: one entry per needle-mover, by week (Sun start)
+  var G='var(--good)',M='var(--mid)',W='var(--weak)',B='var(--muted)';
+  var weeks=[
+    ['7/5',[G,G,B]],['7/12',[G,W]],['7/19',[G,G]],['7/26',[G,G,G]],
+    ['8/2',[]],['8/9',[G]],['8/16',[W,W]],['8/23',[]],
+    ['8/30',[M]],['9/6',[]],['9/13',[]],['9/20',[G]]
+  ];
+  var wrap=document.getElementById('weeks');
+  weeks.forEach(function(w){
+    var d=document.createElement('div');d.className='wk';
+    var c=document.createElement('div');c.className='cell'+(w[1].length?'':' blank');
+    w[1].forEach(function(col){var p=document.createElement('i');p.className='pip';p.style.background=col;c.appendChild(p);});
+    var l=document.createElement('span');l.className='d';l.textContent=w[0];
+    d.appendChild(c);d.appendChild(l);wrap.appendChild(d);
+  });
+
+  // Card navigation
+  var cards=[].slice.call(document.querySelectorAll('.card'));
+  var dotsEl=document.getElementById('dots'),prev=document.getElementById('prev'),next=document.getElementById('next');
+  var i=0;
+  cards.forEach(function(c,k){
+    c.classList.toggle('is-current',k===0);
+    var b=document.createElement('button');b.className='dot';b.type='button';b.setAttribute('aria-label','Card '+(k+1));
+    b.addEventListener('click',function(){go(k)});dotsEl.appendChild(b);
+  });
+  function paint(){
+    [].forEach.call(dotsEl.children,function(b,k){b.setAttribute('aria-current',k===i?'true':'false')});
+    prev.disabled=i===0;next.disabled=i===cards.length-1;
+  }
+  function go(n){
+    if(n<0||n>=cards.length||n===i)return;
+    var fwd=n>i,out=cards[i],inc=cards[n];
+    // pre-position the incoming card on the side it enters from
+    inc.classList.add('no-anim');
+    inc.classList.remove('is-current','is-left');
+    if(!fwd)inc.classList.add('is-left');
+    void inc.offsetWidth;
+    inc.classList.remove('no-anim');
+    // animate
+    out.classList.remove('is-current');
+    if(fwd)out.classList.add('is-left');else out.classList.remove('is-left');
+    inc.classList.remove('is-left');inc.classList.add('is-current');
+    cards.forEach(function(c,k){ if(k!==i&&k!==n){c.classList.add('no-anim');c.classList.remove('is-current');c.classList.toggle('is-left',k<n);void c.offsetWidth;c.classList.remove('no-anim');}});
+    i=n;paint();
+  }
+  prev.addEventListener('click',function(){go(i-1)});
+  next.addEventListener('click',function(){go(i+1)});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight')go(i+1);else if(e.key==='ArrowLeft')go(i-1);
+  });
+  var stage=document.getElementById('stage'),sx=null,sy=null;
+  stage.addEventListener('touchstart',function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+  stage.addEventListener('touchend',function(e){
+    if(sx===null)return;var dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy))go(i+(dx<0?1:-1));sx=null;
+  });
+  stage.addEventListener('click',function(e){
+    if(e.target.closest('button'))return;
+    var r=stage.getBoundingClientRect();go(i+((e.clientX-r.left)>r.width/2?1:-1));
+  });
+  paint();
+})();
+</script>
+
+</body>
+</html>
